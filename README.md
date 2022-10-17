@@ -13,7 +13,7 @@ Module M307 - BUT Info - JS/Postgresql
 - Postgresql
 - NodeJS
 - ExpressJS
-- Sequalize
+- Sequelize
 
 ### Contenu
 - Semaine 1 : [TP 1 : Prise en main de Postgresql + Rappels SQL](./doc/tp1)
