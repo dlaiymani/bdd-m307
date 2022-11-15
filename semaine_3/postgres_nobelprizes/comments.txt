@@ -1,0 +1,122 @@
+START BY EXECUTING THE COMMAND: npm install
+
+******** ONLY IF YOU ARE RECREATING THE PROJECT FROM ZERO AND NOT USING THIS ONE **********
+IN CASE YOU ARE STARTING FROM SCRATCH, DO:
+npm init --yes
+npm install pg
+npm install dotenv
+
+touch parser.js
+touch .env
+
+mkdir database
+touch database/db.js
+code the parser in parser.js
+********************************************************
+https://github.com/dlaiymani/bdd-m307.git
+git://github.com/dlaiymani/bdd-m307.git
+
+cat create.sql | psql postgres                           ==> create tables
+
+
+QUERIES:
+F1: Lister tous les lauréats (id, prénom, nom).
+SELECT DISTINCT id, firstname, surname FROM laureate ORDER BY ID ASC
+
+F2: Étant donné un identifiant, affichez les informations du lauréat avec cet identifiant (prénom, nom, les prix remportés).
+SELECT
+l.id, l.firstname, l.surname, p.year, c.category_name, pl.motivation
+FROM prize_laureate as pl
+JOIN laureate as l
+ON pl.laureate_id = l.id
+JOIN prize as p
+ON pl.prize_id = p.id
+JOIN category as c
+ON p.category_id = c.id
+WHERE l.id = 6
+
+F3: Combien ont remporté plus d'un prix Nobel ?
+SELECT
+pl.laureate_id, l.firstname, l.surname, count(*)
+FROM prize_laureate as pl
+JOIN laureate as l
+ON pl.laureate_id = l.id
+GROUP BY pl.laureate_id, l.firstname, l.surname
+HAVING COUNT(*) > 1
+
+
+F4: Lister toutes les catégories des prix nobel
+SELECT * FROM category
+
+F5: Déterminez quelle catégorie a produit le plus grand nombre de lauréats du prix Nobel.
+SELECT
+p.category_id, c.category_name, count(*)
+FROM prize_laureate as pl
+JOIN prize as p
+ON pl.prize_id = p.id
+JOIN category as c
+ON p.category_id = c.id
+GROUP BY p.category_id, c.category_name
+ORDER by count desc
+LIMIT 1
+
+F6: Pour chaque année, indiquez combien de lauréats avaient remporté un prix nobel.
+SELECT
+p.year, count(*)
+FROM prize_laureate as pl
+JOIN prize as p
+ON pl.prize_id = p.id
+GROUP BY p.year
+ORDER by year desc
+
+F7: Afficher toutes les années au cours desquelles aucun prix Nobel n'a été décerné.
+SELECT DISTINCT year
+FROM prize
+WHERE year NOT IN
+(SELECT
+p.year
+FROM prize as p
+JOIN prize_laureate as pl
+ON p.id = pl.prize_id
+)
+ORDER BY year DESC
+
+F8: Afficher toutes les années de prix nobel triées par nombre de lauréats ascendant/descendant. Exclure les années où
+aucun prix Nobel n'a été décerné
+
+SELECT p.year, count(*)
+FROM prize as p
+JOIN prize_laureate as pl
+ON p.id = pl.prize_id
+WHERE p.year IN
+(SELECT
+p.year
+FROM prize as p
+JOIN prize_laureate as pl
+ON p.id = pl.prize_id
+)
+GROUP BY p.year
+ORDER BY count DESC
+
+
+
+F9: Supprimer un lauréat avec un identifiant donné.
+DELETE FROM laureate where id =
+
+F10: Mettre à jour la motivation d'un lauréat avec un identifiant donné dans une année donnée et une catégorie donnée.
+
+UPDATE prize_laureate
+SET motivation = 'new motivation'
+WHERE id =
+(SELECT
+ pl.id
+ FROM prize_laureate as pl
+ JOIN prize as p
+ ON p.id = pl.prize_id
+ JOIN category as c
+ ON p.category_id = c.id
+ WHERE pl.laureate_id = 6
+ AND c.category_name = 'physics'
+ AND p.year = 1903
+ LIMIT 1
+)
