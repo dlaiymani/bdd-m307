@@ -1,0 +1,20 @@
+npm init (if from scratch)
+npm install (if working on the current project-completed-)
+
+if from scratch you need to install dependencies and created files:
+
+npm install sequelize
+npm install express body-parser
+npm install --save-dev nodemon
+
+mkdir database
+touch database/db.js
+touch index.js
+
+mkdir models
+touch models/client.js
+touch models/passport.js
+touch models/sale.js
+touch models/item.js
+touch models/saleitem.js
+touch models/index.js
