@@ -1,8 +1,9 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const sequelize = require("./database/db");
-const {Client,Passport, Sale, Item, SaleItem} = require("./models");
+const {Client,Passport, Sale, Item, SaleItem, ItemType} = require("./models");
 const {connectionString} = require("pg/lib/defaults");
+const {Sequelize} = require("sequelize");
 
 const port = 3000;
 const app = express();
@@ -42,12 +43,21 @@ async function seed_data(){
     await Sale.bulkCreate(dummy_sales);
 
     // insert dummy items
+    /*
     let dummy_items = [
         {itemname: 'Pocket knife—Nile', itemtype: "E",itemcolor:"Brown"},
         {itemname: 'Pocket knife—Avon', itemtype: "E",itemcolor:"Brown"},
         {itemname: 'Compass', itemtype: "N",itemcolor:"_"},
         {itemname: 'Hammock', itemtype: "F",itemcolor:"Khaki"},
         {itemname: 'Safari cooking kit', itemtype: "E",itemcolor:"_"}
+    ]
+     */
+    let dummy_items = [
+        {itemname: 'Pocket knife—Nile', itemcolor:"Brown"},
+        {itemname: 'Pocket knife—Avon', itemcolor:"Brown"},
+        {itemname: 'Compass', itemcolor:"_"},
+        {itemname: 'Hammock', itemcolor:"Khaki"},
+        {itemname: 'Safari cooking kit', itemcolor:"_"}
     ]
     await Item.bulkCreate(dummy_items);
 
@@ -63,6 +73,20 @@ async function seed_data(){
     ]
 
     await SaleItem.bulkCreate(dummy_sale_items);
+
+    let dummy_item_types = [
+        {itemtypename: 'E', itemtypedesc: "Desc 1"},
+        {itemtypename: 'N', itemtypedesc: "Desc 2"},
+        {itemtypename: 'F', itemtypedesc: "Desc 3"},
+    ]
+    await ItemType.bulkCreate(dummy_item_types);
+    for (let i = 0; i < dummy_items.length; i++){
+        d_item = dummy_items[i];
+        // select random itemtype and assign it to the item
+        itemType = await ItemType.findAll({order:Sequelize.literal('RANDOM()'),limit:1});
+        item = await Item.findOne({where : { itemname: d_item.itemname}});
+        await item.setItemType(itemType[0]);
+    }
 }
 
 
@@ -223,6 +247,45 @@ app.get("/items/lowestup", async(req,res)=>{
     }
 })
 
+app.get("/itemtypes/:id/items", async (req,res)=>{
+    try{
+        let itemType = req.params.id;
+        // eager loading
+        const typeItems = await ItemType.findOne({
+            where: {itemtypeno: itemType},
+            include : [{model: Item}],
+        });
+        return res.status(200).send({status: 1, data: typeItems});
+    }catch (e){
+        console.error(e);
+        return res.status(500).send({status: 0, data: "Internal error"});
+    }
+});
+
+app.get("/itemtypes/bestsale", async (req,res)=>{
+    try{
+        const items = await Item.findAll({
+            attributes: [
+                //[Sequelize.col("item.itemno"),'itemno'],
+                [Sequelize.col("item.itemtype"),'itemtype'],
+                [Sequelize.fn('sum', Sequelize.col('quantity')), 'total_quantity'],
+            ],
+            raw: true,
+            include:[{model:Sale, attributes:[], through: {attributes:[]}}],
+            group: [
+                //Sequelize.col("item.itemno"),
+                Sequelize.col("item.itemtype")
+            ],
+            order: [[Sequelize.fn('sum', Sequelize.col('quantity')),'DESC']]
+        })
+
+        return res.status(200).send({status: 1, data: items[0]});
+    }catch (e){
+        console.error(e);
+        return res.status(500).send({status: 0, data: "Internal error"});
+    }
+})
+
 //One-to-One
 Client.hasOne(Passport);
 Passport.belongsTo(Client);
@@ -230,6 +293,8 @@ Passport.belongsTo(Client);
 //One-to-Many
 Sale.belongsTo(Client, {constraints:true, onDelete: 'CASCADE'});
 Client.hasMany(Sale);
+Item.belongsTo(ItemType,{constraints:true, foreignKey:"itemtype", onDelete: 'CASCADE'});
+ItemType.hasMany(Item, {foreignKey:"itemtype"});
 
 //Many-to-Many
 Sale.belongsToMany(Item, {through: SaleItem, foreignKey: 'saleno'});

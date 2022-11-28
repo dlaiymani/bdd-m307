@@ -1,7 +1,4 @@
-npm init (if from scratch)
-npm install (if working on the current project-completed-)
-
-if from scratch you need to install dependencies and created files:
+npm init
 
 npm install sequelize
 npm install express body-parser

@@ -1,35 +1,28 @@
 const sequelize = require("../database/db");
 const { DataTypes } = require('sequelize');
 
-const Item = sequelize.define('item',{
-    itemno: {
-        field: 'itemno',
+const ItemType = sequelize.define('itemType',{
+    itemtypeno: {
+        field: 'itemtypeno',
         type: DataTypes.INTEGER,
         allowNull: false,
         unique: true,
         primaryKey: true,
         autoIncrement: true
     },
-    itemname: {
-        field: 'itemname',
+    itemtypename: {
+        field: 'itemtypename',
         type: DataTypes.STRING,
         allowNull: false
     },
-    /*
-    itemtype: {
-        field: 'itemtype',
+    itemtypedesc: {
+        field: 'itemtypedesc',
         type: DataTypes.STRING,
-        allowNull: false
-    },
-     */
-    itemcolor: {
-        field: 'itemcolor',
-        type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     }
 },{
     timestamps: false,
     freezeTableName : true
 });
 
-module.exports = Item;
+module.exports = ItemType;
