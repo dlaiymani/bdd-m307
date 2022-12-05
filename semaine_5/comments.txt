@@ -1,0 +1,43 @@
+If downloading the project, use:
+npm install
+
+
+******* MODIFY THE DB CREDENTIALS IN database/sequelize.js ************
+
+If working from scratch:
+Initialize a project:
+npm init --y
+
+Install dependencies:
+npm install --save pg pg-hstore
+npm install dotenv
+npm install --save sequelize express body-parser
+npm install --save-dev nodemon
+
+Create the app.js file
+touch app.js
+
+Create .env file and set the port value
+PORT=3000
+
+Update package.json and add a start command to use nodemon
+"start": "nodemon app.js",
+
+
+create a folder models
+mkdir models
+touch models/playlist.js
+touch models/artist.js
+touch models/artist.passport.js
+touch models/playlist.track.js
+touch models/track.js
+touch models/index.js
+touch models/album.js
+
+
+
+and a folder database
+mkdir database
+touch database/sequelize.js
+
+
